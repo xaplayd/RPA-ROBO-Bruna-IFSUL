@@ -459,7 +459,7 @@ public class App {
 
 				String nomeArquivo = f.getName().replace(".pdf", "").trim();
 
-				// encontra o primeiro dígito
+				
 				int posPrimeiroNumero = -1;
 				for (int i = 0; i < nomeArquivo.length(); i++) {
 					if (Character.isDigit(nomeArquivo.charAt(i))) {
@@ -473,14 +473,14 @@ public class App {
 					continue;
 				}
 
-				// Nome = tudo até 2 caracteres antes do primeiro número
+				
 				String nome = nomeArquivo.substring(0, posPrimeiroNumero - 1).trim();
 
-				// Matrícula = 9 caracteres a partir do primeiro número
+				
 				int fimMatricula = Math.min(posPrimeiroNumero + 9, nomeArquivo.length());
 				String matricula = nomeArquivo.substring(posPrimeiroNumero, fimMatricula);
 
-				// Tipo documento = o restante depois da matrícula
+				
 				String tipo = "";
 				if (fimMatricula < nomeArquivo.length()) {
 					tipo = nomeArquivo.substring(fimMatricula).trim();
@@ -513,7 +513,7 @@ public class App {
 
 				String nomeArquivo = f.getName().replace(".pdf", "").trim();
 
-				// encontra o primeiro dígito
+				
 				int posPrimeiroNumero = -1;
 				for (int i = 0; i < nomeArquivo.length(); i++) {
 					if (Character.isDigit(nomeArquivo.charAt(i))) {
@@ -527,14 +527,14 @@ public class App {
 					continue;
 				}
 
-				// Nome = tudo até 2 caracteres antes do primeiro número
+				
 				String nome = nomeArquivo.substring(0, posPrimeiroNumero - 1).trim();
 
-				// Matrícula = 9 caracteres a partir do primeiro número
+				
 				int fimMatricula = Math.min(posPrimeiroNumero + 9, nomeArquivo.length());
 				String matricula = nomeArquivo.substring(posPrimeiroNumero, fimMatricula);
 
-				// Tipo documento = o restante depois da matrícula
+				
 				String tipo = "";
 				if (fimMatricula < nomeArquivo.length()) {
 					tipo = nomeArquivo.substring(fimMatricula).trim();
@@ -557,12 +557,10 @@ public class App {
 				}
 			}
 			if (!encontrado) {
-				// Não encontrou comprovante, adiciona na lista de pendentes
 				listComprovantesPendentes.add(x);
 			}
 		}
 
-		// Exibe pendentes
 		System.out.println("[...] Comprovantes pendentes:");
 		for (Colaborador c : listComprovantesPendentes) {
 			System.out.println(c.getNome() + " | " + c.getMatricula());
@@ -589,7 +587,6 @@ public class App {
 
 				String nomeArquivo = f.getName().replace(".pdf", "").trim();
 
-				// encontra o primeiro dígito
 				int posPrimeiroNumero = -1;
 				for (int i = 0; i < nomeArquivo.length(); i++) {
 					if (Character.isDigit(nomeArquivo.charAt(i))) {
@@ -603,14 +600,11 @@ public class App {
 					continue;
 				}
 
-				// Nome = tudo até 2 caracteres antes do primeiro número
 				String nome = nomeArquivo.substring(0, posPrimeiroNumero - 1).trim();
 
-				// Matrícula = 9 caracteres a partir do primeiro número
 				int fimMatricula = Math.min(posPrimeiroNumero + 9, nomeArquivo.length());
 				String matricula = nomeArquivo.substring(posPrimeiroNumero, fimMatricula);
 
-				// Tipo documento = o restante depois da matrícula
 				String tipo = "";
 				if (fimMatricula < nomeArquivo.length()) {
 					tipo = nomeArquivo.substring(fimMatricula).trim();
@@ -633,12 +627,10 @@ public class App {
 				}
 			}
 			if (!encontrado) {
-				// Não encontrou comprovante, adiciona na lista de pendentes
 				listPontosPendentes.add(x);
 			}
 		}
 
-		// Exibe pendentes
 		System.out.println("[...] Pontos pendentes:");
 		for (Colaborador c : listPontosPendentes) {
 			System.out.println(c.getNome() + " | " + c.getMatricula());
@@ -652,10 +644,10 @@ public class App {
 
 		UIManager.put("OptionPane.yesButtonText", "Sim");
 		UIManager.put("OptionPane.noButtonText", "Abortar");
-		int opcao = JOptionPane.showConfirmDialog(frame, // Janela pai
+		int opcao = JOptionPane.showConfirmDialog(frame,
 				"Existem documentos pendentes. Deseja compilar mesmo assim?", "Confirmação", JOptionPane.YES_NO_OPTION,
 				JOptionPane.WARNING_MESSAGE);
-		return opcao == JOptionPane.YES_OPTION; // true = continuar, false = abortar
+		return opcao == JOptionPane.YES_OPTION; 
 	}
 
 	public static void juntarDocumentos() {
@@ -680,15 +672,12 @@ public class App {
 	        PdfCopy copy = new PdfCopy(document, new FileOutputStream(output));
 	        document.open();
 
-	        // =======================================================
-	        // ETAPA 1 - Adicionar os documentos fixos, nesta ordem
-	        // =======================================================
 	        File[] documentosFixosIniciais = {
 	            arquivoFolhaPagamento,
 	            arquivoValeAlimentacao,
 	            arquivoValeTransporte,
 	            arquivoValeCombustivel,
-	            arquivoValeAlimentacao, // novamente o mesmo arquivo
+	            arquivoValeAlimentacao, 
 	            arquivoBoletoComprovanteVR
 	        };
 
@@ -701,9 +690,7 @@ public class App {
 	            }
 	        }
 	        System.out.println("[OK] Documentos fixos adicionados com sucesso!");
-	        // =======================================================
 
-	        // ETAPA 2 - Segue lógica já existente (por colaborador)
 	        for (Colaborador colab : colaboradores) {
 	            String nome = colab.getNome();
 	            String matricula = colab.getMatricula();
@@ -721,7 +708,6 @@ public class App {
 	                }
 	            }
 
-	            // VALES: ALIMENTAÇÃO, TRANSPORTE (OCR), COMBUSTÍVEL
 	            File[] vales = { arquivoValeAlimentacao, arquivoVTOcr, arquivoValeCombustivel };
 	            for (File vale : vales) {
 	                if (vale != null && vale.exists()) {
@@ -733,8 +719,8 @@ public class App {
 	        document.close();
 	        System.out.println("\n[OK] Todos os PDFs foram compilados com sucesso!");
 	        System.out.println("[INFO] Forçando liberação de arquivos...");
-	        System.gc();                  // força garbage collector
-	        Thread.sleep(200);            // espera 0,2s para o Windows liberar handles
+	        System.gc();                
+	        Thread.sleep(200);           
 	    } catch (Exception e) {
 	        System.out.println("[ERRO] Erro ao juntar documentos!");
 	        e.printStackTrace();
@@ -742,7 +728,6 @@ public class App {
 	    
 	}
 
-	// Adiciona PDF inteiro
 	private static void adicionarPdfInteiro(PdfCopy copy, File arquivo) {
 	    PdfReader reader = null;
 	    try {
@@ -760,7 +745,6 @@ public class App {
 	    }
 	}
 
-	// Adiciona apenas páginas onde aparece a matrícula
 	private static void adicionarPaginaComMatricula(PdfCopy copy, File arquivo, String matricula) {
 	    PdfReader reader = null;
 	    try {
@@ -773,7 +757,7 @@ public class App {
 	                copy.addPage(copy.getImportedPage(reader, i));
 	                System.out.println("[OK] Adicionado " + arquivo.getName() + " (página com matrícula encontrada)");
 	                adicionou = true;
-	                break; // adiciona apenas a primeira página encontrada
+	                break; 
 	            }
 	        }
 	        if (!adicionou) {
@@ -793,13 +777,11 @@ public class App {
 	        	arquivoVTOcr = new File(arquivoValeTransporte.getParent() + "/vtocr.pdf");
 
 	
-		        // Inicializa OCR
 	        	System.setProperty("asprise.ocrlib.suppress_website_prompt", "true");
 		        Ocr.setUp();
 		        Ocr ocr = new Ocr();
 		        ocr.startEngine("por", Ocr.SPEED_FASTEST);
 	
-		        // Ler PDF e renderizar páginas como imagens
 		        PDDocument doc = null;
 		        try {
 		            doc = PDDocument.load(arquivoValeTransporte);
@@ -814,7 +796,6 @@ public class App {
 		                imageUrls[i] = tempImage.toURI().toURL();
 		            }
 	
-		            // Executar OCR e gerar PDF pesquisável
 		            ocr.recognize(
 		                    imageUrls,
 		                    Ocr.RECOGNIZE_TYPE_ALL,
@@ -846,9 +827,9 @@ public class App {
 		            arquivoValeAlimentacao,
 		            arquivoValeTransporte,
 		            arquivoValeCombustivel,
-		            arquivoValeAlimentacao, // novamente o mesmo arquivo
+		            arquivoValeAlimentacao, 
 		            arquivoBoletoComprovanteVR,
-		            arquivoVTOcr // o 7º arquivo extra
+		            arquivoVTOcr 
 		        };
 
 		        System.out.println("\n[...] Movendo documentos fixos para: " + pastaDestino.getAbsolutePath());
@@ -868,7 +849,7 @@ public class App {
 		                        tentativas++;
 		                        System.out.println("[WARN] Arquivo em uso, tentando novamente (" + tentativas + "/5): " + doc.getName());
 		                        try {
-		                            Thread.sleep(20000); // espera 0,5s antes de tentar novamente
+		                            Thread.sleep(20000); 
 		                        } catch (InterruptedException ex) {
 		                            ex.printStackTrace();
 		                        }
