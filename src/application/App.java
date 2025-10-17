@@ -71,7 +71,6 @@ public class App {
 
 					separaPorPagina();
 					renomeiaPontos();
-					executarOCR();
 			
 
 					List<Colaborador> pendentesComprovantes = revisaPendentesComprovantes(listarContracheques());
@@ -138,7 +137,7 @@ public class App {
 							return null;
 						}
 					}
-
+					executarOCR();
 					juntarDocumentos();
 					moverDocumentosFixosParaCompilacao();
 
