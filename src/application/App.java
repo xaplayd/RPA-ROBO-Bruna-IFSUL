@@ -58,6 +58,7 @@ public class App {
 		SwingWorker<Void, Void> worker = new SwingWorker<>() {
 			@Override
 			protected Void doInBackground() {
+
 				try {
 					selecionarArquivosEDiretorios();
 
@@ -69,81 +70,94 @@ public class App {
 						return null;
 					}
 
-					separaPorPagina();
-					renomeiaPontos();
-			
+					File arquivoCompilado = new File(pastaPontosOri.getParent(), "COMPILACAO_FINAL.PDF");
 
-					List<Colaborador> pendentesComprovantes = revisaPendentesComprovantes(listarContracheques());
-					List<Colaborador> pendentesPontos = revisaPendentesPontos(listarContracheques());
+					boolean status = true;
 
-					if (!pendentesComprovantes.isEmpty() || !pendentesPontos.isEmpty()) {
-						boolean compilarMesmo = perguntarCompilarComPendentes();
-						if (!compilarMesmo) {
-							System.out.println("\n[ERRO] Usuário optou por abortar a compilação.");
-							System.out.println("\n[...] Excluindo arquivos para proxima tentativa de compilação");
-
-							File pastaSeparados = new File(pastaPontosOri.getAbsolutePath() + "/separados");
-							File pastaRenomeados = new File(pastaPontosOri.getAbsolutePath() + "/renomeados");
-							File pastaCompilacao = new File(pastaComprovantes.getParent() + "/4_COMPILACAO");
-
-							File[] pastas = { pastaSeparados, pastaRenomeados, pastaCompilacao };
-							for (File pasta : pastas) {
-								if (pasta.exists()) {
-									File[] arquivos = pasta.listFiles();
-									if (arquivos != null) {
-										for (File f : arquivos) {
-											f.delete();
-										}
-									}
-									pasta.delete();
-								}
-							}
-							for (File pasta : pastas) {
-								if (pasta.exists()) {
-									File[] arquivos = pasta.listFiles();
-									if (arquivos != null) {
-										for (File f : arquivos) {
-											f.delete();
-										}
-									}
-									pasta.delete();
-								}
-							}
-							if (!pendentesComprovantes.isEmpty()) {
-								System.out.println("\n\n\n[!] Comprovantes pendentes:");
-								for (Colaborador c : pendentesComprovantes) {
-									System.out.println(c.getNome() + " | " + c.getMatricula());
-								}
-							}
-							if (!pendentesPontos.isEmpty()) {
-								System.out.println("\n\n\n[!] Pontos pendentes:");
-								for (Colaborador c : pendentesPontos) {
-									System.out.println(c.getNome() + " | " + c.getMatricula());
-								}
-							}
-
-							for (File pasta : pastas) {
-								if (pasta.exists()) {
-									File[] arquivos = pasta.listFiles();
-									if (arquivos != null) {
-										for (File f : arquivos) {
-											f.delete();
-										}
-									}
-									pasta.delete();
-								}
-							}
-
-							return null;
-						}
+					if (arquivoCompilado.exists()) {
+						status = confereStatus();
 					}
-					executarOCR();
-					juntarDocumentos();
-					moverDocumentosFixosParaCompilacao();
 
+					if (status == true) {
+						separaPorPagina();
+						renomeiaPontos();
+						executarOCR();
+						List<Colaborador> pendentesComprovantes = revisaPendentesComprovantes(listarContracheques());
+						List<Colaborador> pendentesPontos = revisaPendentesPontos(listarContracheques());
+
+						if (!pendentesComprovantes.isEmpty() || !pendentesPontos.isEmpty()) {
+							boolean compilarMesmo = perguntarCompilarComPendentes();
+							if (!compilarMesmo) {
+								System.out.println("\n[ERRO] Usuário optou por abortar a compilação.");
+								System.out.println("\n[...] Excluindo arquivos para proxima tentativa de compilação");
+
+								File pastaSeparados = new File(pastaPontosOri.getAbsolutePath() + "/separados");
+								File pastaRenomeados = new File(pastaPontosOri.getAbsolutePath() + "/renomeados");
+								File pastaCompilacao = new File(pastaPontosOri.getAbsolutePath() + "/4_COMPILACAO");
+								
+								moverDocumentosFixosParaGeral();
+								
+
+								File[] pastas = { pastaSeparados, pastaRenomeados, pastaCompilacao};
+								for (File pasta : pastas) {
+									if (pasta.exists()) {
+										File[] arquivos = pasta.listFiles();
+										if (arquivos != null) {
+											for (File f : arquivos) {
+												f.delete();
+											}
+										}
+										pasta.delete();
+									}
+								}
+								for (File pasta : pastas) {
+									if (pasta.exists()) {
+										File[] arquivos = pasta.listFiles();
+										if (arquivos != null) {
+											for (File f : arquivos) {
+												f.delete();
+											}
+										}
+										pasta.delete();
+									}
+								}
+								if (!pendentesComprovantes.isEmpty()) {
+									System.out.println("\n\n\n[!] Comprovantes pendentes:");
+									for (Colaborador c : pendentesComprovantes) {
+										System.out.println(c.getNome() + " | " + c.getMatricula());
+									}
+								}
+								if (!pendentesPontos.isEmpty()) {
+									System.out.println("\n\n\n[!] Pontos pendentes:");
+									for (Colaborador c : pendentesPontos) {
+										System.out.println(c.getNome() + " | " + c.getMatricula());
+									}
+								}
+
+								for (File pasta : pastas) {
+									if (pasta.exists()) {
+										File[] arquivos = pasta.listFiles();
+										if (arquivos != null) {
+											for (File f : arquivos) {
+												f.delete();
+											}
+										}
+										pasta.delete();
+									}
+								}
+
+								return null;
+							}
+						}
+						juntarDocumentos();
+						moverDocumentosFixosParaCompilacao();
+					} else {
+						System.out.println("\n[...] Abortado pelo usuário!");
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+
 				return null;
 			}
 
@@ -442,8 +456,6 @@ public class App {
 
 	}
 
-	
-
 	public static List<Colaborador> listarContracheques() {
 		List<Colaborador> listContracheque = new ArrayList<Colaborador>();
 		try {
@@ -458,7 +470,6 @@ public class App {
 
 				String nomeArquivo = f.getName().replace(".pdf", "").trim();
 
-				
 				int posPrimeiroNumero = -1;
 				for (int i = 0; i < nomeArquivo.length(); i++) {
 					if (Character.isDigit(nomeArquivo.charAt(i))) {
@@ -472,14 +483,11 @@ public class App {
 					continue;
 				}
 
-				
 				String nome = nomeArquivo.substring(0, posPrimeiroNumero - 1).trim();
 
-				
 				int fimMatricula = Math.min(posPrimeiroNumero + 9, nomeArquivo.length());
 				String matricula = nomeArquivo.substring(posPrimeiroNumero, fimMatricula);
 
-				
 				String tipo = "";
 				if (fimMatricula < nomeArquivo.length()) {
 					tipo = nomeArquivo.substring(fimMatricula).trim();
@@ -512,7 +520,6 @@ public class App {
 
 				String nomeArquivo = f.getName().replace(".pdf", "").trim();
 
-				
 				int posPrimeiroNumero = -1;
 				for (int i = 0; i < nomeArquivo.length(); i++) {
 					if (Character.isDigit(nomeArquivo.charAt(i))) {
@@ -526,14 +533,11 @@ public class App {
 					continue;
 				}
 
-				
 				String nome = nomeArquivo.substring(0, posPrimeiroNumero - 1).trim();
 
-				
 				int fimMatricula = Math.min(posPrimeiroNumero + 9, nomeArquivo.length());
 				String matricula = nomeArquivo.substring(posPrimeiroNumero, fimMatricula);
 
-				
 				String tipo = "";
 				if (fimMatricula < nomeArquivo.length()) {
 					tipo = nomeArquivo.substring(fimMatricula).trim();
@@ -643,235 +647,347 @@ public class App {
 
 		UIManager.put("OptionPane.yesButtonText", "Sim");
 		UIManager.put("OptionPane.noButtonText", "Abortar");
-		int opcao = JOptionPane.showConfirmDialog(frame,
-				"Existem documentos pendentes. Deseja compilar mesmo assim?", "Confirmação", JOptionPane.YES_NO_OPTION,
-				JOptionPane.WARNING_MESSAGE);
-		return opcao == JOptionPane.YES_OPTION; 
+		int opcao = JOptionPane.showConfirmDialog(frame, "Existem documentos pendentes. Deseja compilar mesmo assim?",
+				"Confirmação", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		return opcao == JOptionPane.YES_OPTION;
 	}
 
 	public static void juntarDocumentos() {
-	    System.out.println("\n[...] Iniciando compilação!");
+		System.out.println("\n[...] Iniciando compilação!");
 
-	    try {
-	        File pastaCompilacao = new File(pastaComprovantes.getParent());
-	        if (!pastaCompilacao.exists()) {
-	            pastaCompilacao.mkdirs();
-	        }
+		try {
+			File pastaCompilacao = new File(pastaComprovantes.getParent());
+			if (!pastaCompilacao.exists()) {
+				pastaCompilacao.mkdirs();
+			}
 
-	        List<Colaborador> colaboradores = listarContracheques();
-	        if (colaboradores == null || colaboradores.isEmpty()) {
-	            System.out.println("[ERRO] Nenhum colaborador encontrado para compilar!");
-	            return;
-	        }
+			List<Colaborador> colaboradores = listarContracheques();
+			if (colaboradores == null || colaboradores.isEmpty()) {
+				System.out.println("[ERRO] Nenhum colaborador encontrado para compilar!");
+				return;
+			}
 
-	        File output = new File(pastaCompilacao, "COMPILACAO_FINAL.pdf");
-	        System.out.println("[...] Criando arquivo final: " + output.getAbsolutePath());
+			File output = new File(pastaCompilacao, "COMPILACAO_FINAL.pdf");
+			System.out.println("[...] Criando arquivo final: " + output.getAbsolutePath());
 
-	        Document document = new Document();
-	        PdfCopy copy = new PdfCopy(document, new FileOutputStream(output));
-	        document.open();
+			Document document = new Document();
+			PdfCopy copy = new PdfCopy(document, new FileOutputStream(output));
+			document.open();
 
-	        File[] documentosFixosIniciais = {
-	            arquivoFolhaPagamento,
-	            arquivoValeAlimentacao,
-	            arquivoValeTransporte,
-	            arquivoValeCombustivel,
-	            arquivoValeAlimentacao, 
-	            arquivoBoletoComprovanteVR
-	        };
+			File[] documentosFixosIniciais = { arquivoFolhaPagamento, arquivoValeAlimentacao, arquivoValeTransporte,
+					arquivoValeCombustivel, arquivoValeAlimentacao, arquivoBoletoComprovanteVR };
 
-	        System.out.println("\n[INFO] Adicionando documentos fixos iniciais...");
-	        for (File doc : documentosFixosIniciais) {
-	            if (doc != null && doc.exists()) {
-	                adicionarPdfInteiro(copy, doc);
-	            } else {
-	                System.out.println("[AVISO] Documento fixo ausente: " + (doc != null ? doc.getName() : "null"));
-	            }
-	        }
-	        System.out.println("[OK] Documentos fixos adicionados com sucesso!");
+			System.out.println("\n[INFO] Adicionando documentos fixos iniciais...");
+			for (File doc : documentosFixosIniciais) {
+				if (doc != null && doc.exists()) {
+					adicionarPdfInteiro(copy, doc);
+				} else {
+					System.out.println("[AVISO] Documento fixo ausente: " + (doc != null ? doc.getName() : "null"));
+				}
+			}
+			System.out.println("[OK] Documentos fixos adicionados com sucesso!");
 
-	        for (Colaborador colab : colaboradores) {
-	            String nome = colab.getNome();
-	            String matricula = colab.getMatricula();
-	            System.out.println("\n[INFO] Adicionando documentos de: " + nome + " | " + matricula);
+			for (Colaborador colab : colaboradores) {
+				String nome = colab.getNome();
+				String matricula = colab.getMatricula();
+				System.out.println("\n[INFO] Adicionando documentos de: " + nome + " | " + matricula);
 
-	            File ponto = new File(pastaPontosOri.getAbsolutePath() + "/renomeados/" + nome + " " + matricula + " 1_Ponto.pdf");
-	            File contracheque = new File(pastaContracheque, nome + " " + matricula + " 2_Contracheque.pdf");
-	            File comprovante = new File(pastaComprovantes, nome + " " + matricula + " 3_Comprovante [Folha].pdf");
+				File ponto = new File(
+						pastaPontosOri.getAbsolutePath() + "/renomeados/" + nome + " " + matricula + " 1_Ponto.pdf");
+				File contracheque = new File(pastaContracheque, nome + " " + matricula + " 2_Contracheque.pdf");
+				File comprovante = new File(pastaComprovantes, nome + " " + matricula + " 3_Comprovante [Folha].pdf");
 
-	            File[] documentosFixos = { ponto, contracheque, comprovante };
+				File[] documentosFixos = { ponto, contracheque, comprovante };
 
-	            for (File doc : documentosFixos) {
-	                if (doc != null && doc.exists()) {
-	                    adicionarPdfInteiro(copy, doc);
-	                }
-	            }
+				for (File doc : documentosFixos) {
+					if (doc != null && doc.exists()) {
+						adicionarPdfInteiro(copy, doc);
+					}
+				}
 
-	            File[] vales = { arquivoValeAlimentacao, arquivoVTOcr, arquivoValeCombustivel };
-	            for (File vale : vales) {
-	                if (vale != null && vale.exists()) {
-	                    adicionarPaginaComMatricula(copy, vale, matricula);
-	                }
-	            }
-	        }
+				File[] vales = { arquivoValeAlimentacao, arquivoVTOcr, arquivoValeCombustivel };
+				for (File vale : vales) {
+					if (vale != null && vale.exists()) {
+						adicionarPaginaComMatricula(copy, vale, matricula);
+					}
+				}
+			}
 
-	        document.close();
-	        System.out.println("\n[OK] Todos os PDFs foram compilados com sucesso!");
-	        System.out.println("[INFO] Forçando liberação de arquivos...");
-	        System.gc();                
-	        Thread.sleep(200);           
-	    } catch (Exception e) {
-	        System.out.println("[ERRO] Erro ao juntar documentos!");
-	        e.printStackTrace();
-	    }
-	    
+			document.close();
+			System.out.println("\n[OK] Todos os PDFs foram compilados com sucesso!");
+			System.out.println("[INFO] Forçando liberação de arquivos...");
+			System.gc();
+			Thread.sleep(200);
+
+			File pastaOrigem = new File(pastaPontosOri.getAbsolutePath() + "/separados");
+			System.out.println("\n[...] Iniciando Exclusão de arquivos temporários!");
+			if (pastaOrigem.exists()) {
+				File[] arquivos = pastaOrigem.listFiles();
+				if (arquivos != null) {
+					for (File f : arquivos) {
+						f.delete();
+					}
+				}
+				pastaOrigem.delete();
+				System.out.println("[OK] Pasta 'separados' excluída com sucesso!");
+			}
+			File pastaOrigemDois = new File(pastaPontosOri.getAbsolutePath() + "/renomeados");
+			if (pastaOrigemDois.exists()) {
+				File[] arquivos = pastaOrigemDois.listFiles();
+				if (arquivos != null) {
+					for (File f : arquivos) {
+						f.delete();
+					}
+				}
+				pastaOrigemDois.delete();
+				System.out.println("[OK] Pasta 'renomeados' excluída com sucesso!");
+			}
+
+		} catch (Exception e) {
+			System.out.println("[ERRO] Erro ao juntar documentos!");
+			e.printStackTrace();
+		}
+
 	}
 
 	private static void adicionarPdfInteiro(PdfCopy copy, File arquivo) {
-	    PdfReader reader = null;
-	    try {
-	        reader = new PdfReader(arquivo.getAbsolutePath());
-	        int nPaginas = reader.getNumberOfPages();
-	        for (int i = 1; i <= nPaginas; i++) {
-	            copy.addPage(copy.getImportedPage(reader, i));
-	        }
-	        System.out.println("[OK] Adicionado: " + arquivo.getName());
-	    } catch (Exception e) {
-	        System.out.println("[ERRO] Falha ao adicionar: " + arquivo.getName());
-	        e.printStackTrace();
-	    } finally {
-	        try { if (reader != null) reader.close(); } catch (Exception e) {}
-	    }
+		PdfReader reader = null;
+		try {
+			reader = new PdfReader(arquivo.getAbsolutePath());
+			int nPaginas = reader.getNumberOfPages();
+			for (int i = 1; i <= nPaginas; i++) {
+				copy.addPage(copy.getImportedPage(reader, i));
+			}
+			System.out.println("[OK] Adicionado: " + arquivo.getName());
+		} catch (Exception e) {
+			System.out.println("[ERRO] Falha ao adicionar: " + arquivo.getName());
+			e.printStackTrace();
+		} finally {
+			try {
+				if (reader != null)
+					reader.close();
+			} catch (Exception e) {
+			}
+		}
 	}
 
 	private static void adicionarPaginaComMatricula(PdfCopy copy, File arquivo, String matricula) {
-	    PdfReader reader = null;
-	    try {
-	        reader = new PdfReader(arquivo.getAbsolutePath());
-	        int nPaginas = reader.getNumberOfPages();
-	        boolean adicionou = false;
-	        for (int i = 1; i <= nPaginas; i++) {
-	            String texto = PdfTextExtractor.getTextFromPage(reader, i);
-	            if (texto.contains(matricula)) {
-	                copy.addPage(copy.getImportedPage(reader, i));
-	                System.out.println("[OK] Adicionado " + arquivo.getName() + " (página com matrícula encontrada)");
-	                adicionou = true;
-	                break; 
-	            }
-	        }
-	        if (!adicionou) {
-	            System.out.println("[INFO] Matrícula não encontrada em " + arquivo.getName() + ", ignorando.");
-	        }
-	    } catch (Exception e) {
-	        System.out.println("[ERRO] Falha ao processar " + arquivo.getName());
-	        e.printStackTrace();
-	    } finally {
-	        try { if (reader != null) reader.close(); } catch (Exception e) {}
-	    }
+		PdfReader reader = null;
+		try {
+			reader = new PdfReader(arquivo.getAbsolutePath());
+			int nPaginas = reader.getNumberOfPages();
+			boolean adicionou = false;
+			for (int i = 1; i <= nPaginas; i++) {
+				String texto = PdfTextExtractor.getTextFromPage(reader, i);
+				if (texto.contains(matricula)) {
+					copy.addPage(copy.getImportedPage(reader, i));
+					System.out.println("[OK] Adicionado " + arquivo.getName() + " (página com matrícula encontrada)");
+					adicionou = true;
+					break;
+				}
+			}
+			if (!adicionou) {
+				System.out.println("[INFO] Matrícula não encontrada em " + arquivo.getName() + ", ignorando.");
+			}
+		} catch (Exception e) {
+			System.out.println("[ERRO] Falha ao processar " + arquivo.getName());
+			e.printStackTrace();
+		} finally {
+			try {
+				if (reader != null)
+					reader.close();
+			} catch (Exception e) {
+			}
+		}
 	}
 
-	 public static void executarOCR() throws Exception {
-	        try {
-	        	System.out.println("[...]Iniciando conversão do arquivo do VT para OCR!");
-	        	arquivoVTOcr = new File(arquivoValeTransporte.getParent() + "/vtocr.pdf");
+	public static void executarOCR() throws Exception {
+		try {
+			System.out.println("\n[...]Iniciando conversão do arquivo do VT para OCR!");
+			arquivoVTOcr = new File(arquivoValeTransporte.getParent() + "/vtocr.pdf");
 
-	
-	        	System.setProperty("asprise.ocrlib.suppress_website_prompt", "true");
-		        Ocr.setUp();
-		        Ocr ocr = new Ocr();
-		        ocr.startEngine("por", Ocr.SPEED_FASTEST);
-	
-		        PDDocument doc = null;
-		        try {
-		            doc = PDDocument.load(arquivoValeTransporte);
-		            PDFRenderer renderer = new PDFRenderer(doc);
-		            int pages = doc.getNumberOfPages();
-		            URL[] imageUrls = new URL[pages];
-	
-		            for (int i = 0; i < pages; i++) {
-		                BufferedImage bim = renderer.renderImageWithDPI(i, 300);
-		                File tempImage = File.createTempFile("page_" + i, ".png");
-		                ImageIO.write(bim, "png", tempImage);
-		                imageUrls[i] = tempImage.toURI().toURL();
-		            }
-	
-		            ocr.recognize(
-		                    imageUrls,
-		                    Ocr.RECOGNIZE_TYPE_ALL,
-		                    Ocr.OUTPUT_FORMAT_PDF,
-		                    Ocr.PROP_PDF_OUTPUT_FILE, arquivoVTOcr.getAbsolutePath()
-		            );
-	
-		        } finally {
-		            if (doc != null) {
-		                doc.close();
-		            }
-		        }
-	
-		        ocr.stopEngine();
-		    } catch(Exception e) {
-		    	e.getMessage();
-		    }
-	 }
-	
-	 public static void moverDocumentosFixosParaCompilacao() {
-		    try {
-		        File pastaDestino = new File(pastaComprovantes.getParent() + "/4_COMPILACAO");
-		        if (!pastaDestino.exists()) {
-		            pastaDestino.mkdirs();
-		        }
+			System.setProperty("asprise.ocrlib.suppress_website_prompt", "true");
+			Ocr.setUp();
+			Ocr ocr = new Ocr();
+			ocr.startEngine("por", Ocr.SPEED_FASTEST);
 
-		        File[] documentosFixos = {
-		            arquivoFolhaPagamento,
-		            arquivoValeAlimentacao,
-		            arquivoValeTransporte,
-		            arquivoValeCombustivel,
-		            arquivoValeAlimentacao, 
-		            arquivoBoletoComprovanteVR,
-		            arquivoVTOcr 
-		        };
+			PDDocument doc = null;
+			try {
+				doc = PDDocument.load(arquivoValeTransporte);
+				PDFRenderer renderer = new PDFRenderer(doc);
+				int pages = doc.getNumberOfPages();
+				URL[] imageUrls = new URL[pages];
 
-		        System.out.println("\n[...] Movendo documentos fixos para: " + pastaDestino.getAbsolutePath());
+				for (int i = 0; i < pages; i++) {
+					BufferedImage bim = renderer.renderImageWithDPI(i, 300);
+					File tempImage = File.createTempFile("page_" + i, ".png");
+					ImageIO.write(bim, "png", tempImage);
+					imageUrls[i] = tempImage.toURI().toURL();
+				}
 
-		        for (File doc : documentosFixos) {
-		            if (doc != null && doc.exists()) {
-		                File destino = new File(pastaDestino, doc.getName());
-		                boolean movido = false;
-		                int tentativas = 0;
+				ocr.recognize(imageUrls, Ocr.RECOGNIZE_TYPE_ALL, Ocr.OUTPUT_FORMAT_PDF, Ocr.PROP_PDF_OUTPUT_FILE,
+						arquivoVTOcr.getAbsolutePath());
 
-		                while (!movido && tentativas < 5) {
-		                    try {
-		                        Files.move(doc.toPath(), destino.toPath(), StandardCopyOption.REPLACE_EXISTING);
-		                        movido = true;
-		                        System.out.println("[OK] Movido: " + doc.getName());
-		                    } catch (Exception e) {
-		                        tentativas++;
-		                        System.out.println("[WARN] Arquivo em uso, tentando novamente (" + tentativas + "/5): " + doc.getName());
-		                        try {
-		                            Thread.sleep(20000); 
-		                        } catch (InterruptedException ex) {
-		                            ex.printStackTrace();
-		                        }
-		                    }
-		                }
+			} finally {
+				if (doc != null) {
+					doc.close();
+				}
+			}
 
-		                if (!movido) {
-		                    System.out.println("[ERRO] Não foi possível mover: " + doc.getName());
-		                }
-
-		            } else {
-		                System.out.println("[AVISO] Documento ausente, não movido: " + (doc != null ? doc.getName() : "null"));
-		            }
-		        }
-
-		        System.out.println("[OK] Todos os documentos fixos foram movidos para /4_COMPILACAO!");
-
-		    } catch (Exception e) {
-		        System.out.println("[ERRO] Falha ao mover documentos fixos!");
-		        e.printStackTrace();
-		    }
+			ocr.stopEngine();
+		} catch (Exception e) {
+			e.getMessage();
 		}
+	}
+
+	public static void moverDocumentosFixosParaCompilacao() {
+		try {
+			File pastaDestino = new File(pastaComprovantes.getParent() + "/4_COMPILACAO");
+			if (!pastaDestino.exists()) {
+				pastaDestino.mkdirs();
+			}
+
+			File[] documentosFixos = { arquivoFolhaPagamento, arquivoValeAlimentacao, arquivoValeTransporte,
+					arquivoValeCombustivel, arquivoValeAlimentacao, arquivoBoletoComprovanteVR, arquivoVTOcr };
+
+			System.out.println("\n[...] Movendo documentos fixos para: " + pastaDestino.getAbsolutePath());
+
+			for (File doc : documentosFixos) {
+				if (doc != null && doc.exists()) {
+					File destino = new File(pastaDestino, doc.getName());
+					boolean movido = false;
+					int tentativas = 0;
+
+					while (!movido && tentativas < 5) {
+						try {
+							Files.move(doc.toPath(), destino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+							movido = true;
+							System.out.println("[OK] Movido: " + doc.getName());
+						} catch (Exception e) {
+							tentativas++;
+							System.out.println("[WARN] Arquivo em uso, tentando novamente (" + tentativas + "/5): "
+									+ doc.getName());
+							try {
+								Thread.sleep(20000);
+							} catch (InterruptedException ex) {
+								ex.printStackTrace();
+							}
+						}
+					}
+
+					if (!movido) {
+						System.out.println("[ERRO] Não foi possível mover: " + doc.getName());
+					}
+
+				} else {
+					System.out.println(
+							"[AVISO] Documento ausente, não movido: " + (doc != null ? doc.getName() : "null"));
+				}
+			}
+
+			System.out.println("[OK] Todos os documentos fixos foram movidos para /4_COMPILACAO!");
+
+		} catch (Exception e) {
+			System.out.println("[ERRO] Falha ao mover documentos fixos!");
+			e.printStackTrace();
+		}
+	}
 	
+	public static void moverDocumentosFixosParaGeral() {
+		try {
+			System.gc();
+			File pastaDestino = new File(pastaComprovantes.getParent() + "/4_COMPILACAO");
+			if (!pastaDestino.exists()) {
+				pastaDestino.mkdirs();
+			}
+
+			File[] documentosFixos = { arquivoFolhaPagamento, arquivoValeAlimentacao, arquivoValeTransporte,
+					arquivoValeCombustivel, arquivoValeAlimentacao, arquivoBoletoComprovanteVR};
+
+			System.out.println("\n[...] Movendo documentos fixos para: " + pastaComprovantes.getParent());
+
+			for (File doc : documentosFixos) {
+				if (doc != null && doc.exists()) {
+					File destino = new File(pastaComprovantes.getParent(), doc.getName());
+					boolean movido = false;
+					int tentativas = 0;
+
+					while (!movido && tentativas < 5) {
+						try {
+							Files.move(doc.toPath(), destino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+							movido = true;
+							System.out.println("[OK] Movido: " + doc.getName());
+						} catch (Exception e) {
+							tentativas++;
+							System.out.println("[WARN] Arquivo em uso, tentando novamente (" + tentativas + "/5): "
+									+ doc.getName());
+							try {
+								Thread.sleep(20000);
+							} catch (InterruptedException ex) {
+								ex.printStackTrace();
+							}
+						}
+					}
+
+					if (!movido) {
+						System.out.println("[ERRO] Não foi possível mover: " + doc.getName());
+					}
+
+				} else {
+					System.out.println(
+							"[AVISO] Documento ausente, não movido: " + (doc != null ? doc.getName() : "null"));
+				}
+			}
+			
+			
+			if (arquivoVTOcr.exists()) {
+				if (arquivoVTOcr != null) {
+					arquivoVTOcr.delete();
+				}
+				arquivoVTOcr.delete();
+				System.out.println("\n[OK] Arquivo 'vtocr' excluída com sucesso!");
+			}
+			
+			File pastaCompilacao = new File(pastaPontosOri.getParent() + "/4_COMPILACAO");
+			
+			if (pastaCompilacao.exists()) {
+				if (pastaCompilacao != null) {
+					pastaCompilacao.delete();
+				}
+				pastaCompilacao.delete();
+				System.out.println("\n[OK] Pasta '4_COMPILACAO' excluída com sucesso!");
+			}
+			
+			File fileCompilacaoFinal = new File(pastaPontosOri.getParent() + "/COMPILACAO_FINAL.PDF");
+			
+			if (fileCompilacaoFinal.exists()) {
+				if (fileCompilacaoFinal != null) {
+					fileCompilacaoFinal.delete();
+				}
+				fileCompilacaoFinal.delete();
+				System.out.println("\n[OK] Arquivo 'COMPILACAO_FINAL' excluído com sucesso!");
+			}
+			
+
+			System.out.println("\n[OK] Todos os documentos fixos foram movidos para origem");
+
+		} catch (Exception e) {
+			System.out.println("[ERRO] Falha ao mover documentos fixos!");
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean confereStatus() {
+
+		UIManager.put("OptionPane.yesButtonText", "Sim");
+		UIManager.put("OptionPane.noButtonText", "Abortar");
+
+		int opcao = JOptionPane.showConfirmDialog(frame,
+				"Já existe uma compilação executada. Deseja executar mesmo assim?\n                                       (O arquivo será sobreposto)",
+				"Confirmação", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		return opcao == JOptionPane.YES_OPTION;
+	}
+
 }
 
 class Colaborador {
